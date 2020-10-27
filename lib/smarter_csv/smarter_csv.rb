@@ -194,16 +194,6 @@ module SmarterCSV
         line.chomp!    # will use $/ which is set to options[:col_sep]
         next if line.empty? || line =~ /\A\s*\z/
 
-        if (line =~ %r{#{options[:quote_char]}}) and (! options[:force_simple_split])
-          dataA = begin
-            CSV.parse( line, csv_options ).flatten.collect!{|x| x.nil? ? '' : x} # to deal with nil values from CSV.parse
-          rescue CSV::MalformedCSVError => e
-            raise $!, "#{$!} [SmarterCSV: csv line #{@csv_line_count}]", $!.backtrace
-          end
-        else
-          dataA =  line.split(options[:col_sep])
-        end
-
         # do the data transformations the user requested:
         if options[:data_transformations]
           options[:data_transformations].each do |transformation|
@@ -219,6 +209,16 @@ module SmarterCSV
               dataA = transformation.call( dataA )
             end
           end
+        end
+
+        if (line =~ %r{#{options[:quote_char]}}) and (! options[:force_simple_split])
+          dataA = begin
+            CSV.parse( line, csv_options ).flatten.collect!{|x| x.nil? ? '' : x} # to deal with nil values from CSV.parse
+          rescue CSV::MalformedCSVError => e
+            raise $!, "#{$!} [SmarterCSV: csv line #{@csv_line_count}]", $!.backtrace
+          end
+        else
+          dataA =  line.split(options[:col_sep])
         end
 
         # if a row in the CSV does not contain any data, we'll ignore it, but issue a warning:
