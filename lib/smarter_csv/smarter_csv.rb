@@ -198,15 +198,15 @@ module SmarterCSV
         if options[:data_transformations]
           options[:data_transformations].each do |transformation|
             if transformation.is_a?(Symbol)
-              dataA = self.public_send( transformation, dataA )
+              line = self.public_send( transformation, line )
             elsif transformation.is_a?(Hash)
               trans, args = transformation.first
-              dataA = self.public_send( trans, dataA, args )
+              line = self.public_send( trans, line, args )
             elsif transformation.is_a?(Array)
               trans, args = transformation
-              dataA = self.public_send( trans, dataA, args )
+              line = self.public_send( trans, line, args )
             else
-              dataA = transformation.call( dataA )
+              line = transformation.call( line )
             end
           end
         end
