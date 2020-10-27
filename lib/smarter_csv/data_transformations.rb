@@ -17,4 +17,11 @@ module SmarterCSV
     }
     @@remove_quote_chars.call(array)
   end
+
+  def self.clean_quote_chars(array)
+    @@remove_quote_chars ||= Proc.new {|array|
+      array.map{|x| x.is_a?(String) ? x.gsub(%r{[\\"]}, '') : x }
+    }
+    @@remove_quote_chars.call(array)
+  end
 end
