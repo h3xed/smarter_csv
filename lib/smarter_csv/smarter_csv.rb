@@ -194,21 +194,8 @@ module SmarterCSV
         line.chomp!    # will use $/ which is set to options[:col_sep]
         next if line.empty? || line =~ /\A\s*\z/
 
-        # do the data transformations the user requested:
-        if options[:data_transformations]
-          options[:data_transformations].each do |transformation|
-            if transformation.is_a?(Symbol)
-              line = self.public_send( transformation, line )
-            elsif transformation.is_a?(Hash)
-              trans, args = transformation.first
-              line = self.public_send( trans, line, args )
-            elsif transformation.is_a?(Array)
-              trans, args = transformation
-              line = self.public_send( trans, line, args )
-            else
-              line = transformation.call( line )
-            end
-          end
+        if options[:clean_quotes]
+          line = line.gsub(%r{[\\"]}, '')
         end
 
         if (line =~ %r{#{options[:quote_char]}}) and (! options[:force_simple_split])
@@ -219,6 +206,23 @@ module SmarterCSV
           end
         else
           dataA =  line.split(options[:col_sep])
+        end
+
+        # do the data transformations the user requested:
+        if options[:data_transformations]
+          options[:data_transformations].each do |transformation|
+            if transformation.is_a?(Symbol)
+              dataA = self.public_send( transformation, dataA )
+            elsif transformation.is_a?(Hash)
+              trans, args = transformation.first
+              dataA = self.public_send( trans, dataA, args )
+            elsif transformation.is_a?(Array)
+              trans, args = transformation
+              dataA = self.public_send( trans, dataA, args )
+            else
+              dataA = transformation.call( dataA )
+            end
+          end
         end
 
         # if a row in the CSV does not contain any data, we'll ignore it, but issue a warning:
